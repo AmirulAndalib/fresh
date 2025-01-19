@@ -5,7 +5,7 @@ description: |
 
 Partials allow areas of the page to be updated with new content by the server
 without causing the browser to reload the page. They make your website feel more
-app-like because only the parts of the page that need to be updated will
+app-like because only the parts of the page that need to be updated will be
 updated.
 
 ## Enabling partials
@@ -18,10 +18,10 @@ The quickest way to get started is to enable partials for every page in
 `routes/_app.tsx` by making the following changes.
 
 ```diff routes/_app.tsx
-  import { AppProps } from "$fresh/server.ts";
+  import { PageProps } from "$fresh/server.ts";
 + import { Partial } from "$fresh/runtime.ts";
 
-  export default function App({ Component }: AppProps) {
+  export default function App({ Component }: PageProps) {
     return (
       <html>
         <head>
@@ -82,7 +82,7 @@ The code for such a page (excluding styling) might look like this:
 
 ```tsx routes/docs/[id].tsx
 export default defineRoute(async (req, ctx) => {
-  const content = await loadContent(props.params.id);
+  const content = await loadContent(ctx.params.id);
 
   return (
     <div>
@@ -101,7 +101,7 @@ export default defineRoute(async (req, ctx) => {
 An optimal route that only renders the content instead of the outer layout with
 the sidebar might look like this respectively.
 
-```tsx partials/docs/[id].tsx
+```tsx routes/partials/docs/[id].tsx
 import { defineRoute, RouteConfig } from "$fresh/server.ts";
 import { Partial } from "$fresh/runtime.ts";
 
@@ -114,7 +114,7 @@ export const config: RouteConfig = {
 };
 
 export default defineRoute(async (req, ctx) => {
-  const content = await loadContent(props.params.id);
+  const content = await loadContent(ctx.params.id);
 
   // Only render the new content
   return (
@@ -150,7 +150,7 @@ partials as desired. That way you can update multiple unrelated areas on your
 page in one single HTTP response. A scenario where this is useful are online
 shops for example.
 
-```tsx routes/partials/cart
+```tsx routes/partials/cart.tsx
 export default function AddToCartPartial() {
   return (
     <>
@@ -196,3 +196,33 @@ export default function LogView() {
 
 > [info]: When picking the `prepend` or `append` mode, make sure to add keys to
 > the elements.
+
+## Bypassing or disabling Partials
+
+If you want to exempt a particular element from triggering a partial request
+like on a particular link, form or button, you can opt out of it by setting
+`f-client-nav={false}` on the element or one of the ancestor elements.
+
+```tsx
+<body f-client-nav>
+  {/* This will cause a partial navigation */}
+  <a href="/docs/page1">With partials</a>
+
+  {/* This WONT cause a partial navigation */}
+  <a href="/docs/page1" f-client-nav={false}>No partials</a>
+
+  {/* This WONT cause a partial navigation on any elements below */}
+  <div f-client-nav={false}>
+    <div>
+      <a href="/docs/page1">No partials</a>
+    </div>
+  </div>
+</body>;
+```
+
+Whenever an element is clicked Fresh checks if it has the `f-client-nav`
+attribute and if it is set to `true`. If the element itself doesn't have such an
+attribute, it will check if any of the ancestor elements has it. If an element
+was found with a truthy `f-client-nav` attribute a partial request will be
+triggered. If there is no such attribute or if it's set to `false`, no partial
+request will occur.

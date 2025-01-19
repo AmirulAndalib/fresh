@@ -13,25 +13,21 @@ export default function NavigationBar(
       href: "/showcase",
     },
     {
-      name: "Components",
-      href: "/components",
-    },
-    {
       name: "Blog",
       href: "https://deno.com/blog?tag=fresh",
     },
   ];
   const isHome = props.active == "/";
   return (
-    <nav class={"flex " + props.class ?? ""}>
-      <ul class="flex justify-center items-center gap-2 sm:gap-4 mx-4 my-2 sm:my-6 flex-wrap">
+    <nav class={"flex " + (props.class ?? "")} f-client-nav={false}>
+      <ul class="flex items-center gap-x-2 sm:gap-4 mx-4 my-2 sm:my-6 flex-wrap lg:mx-8 2xl:mr-0">
         {items.map((item) => (
-          <li>
+          <li key={item.name}>
             <a
               href={item.href}
               class={`p-1 sm:p-2 ${
                 isHome ? "text-green-900" : "text-gray-600"
-              } hover:underline [data-current]:font-bold [data-ancestor]:font-bold`}
+              } hover:underline aria-[current]:font-bold`}
             >
               {item.name}
             </a>
