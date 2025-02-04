@@ -16,9 +16,9 @@ requests. You can CORS enable all the routes affected by some `middleware` by
 doing the following:
 
 ```ts routes/_middleware.ts
-import { MiddlewareHandlerContext } from "$fresh/server.ts";
+import { FreshContext } from "$fresh/server.ts";
 
-export async function handler(req: Request, ctx: MiddlewareHandlerContext) {
+export async function handler(req: Request, ctx: FreshContext) {
   const origin = req.headers.get("Origin") || "*";
   const resp = await ctx.next();
   const headers = resp.headers;
@@ -45,20 +45,20 @@ deal with "preflight requests". Let's imagine you're trying to support a
 `DELETE` route. Then you'd need to do something like this:
 
 ```ts routes/_middleware.ts
-import { MiddlewareHandlerContext } from "$fresh/server.ts";
+import { FreshContext } from "$fresh/server.ts";
 
-export async function handler(_req: Request, ctx: MiddlewareHandlerContext) {
-  if (_req.method == "OPTIONS") {
+export async function handler(req: Request, ctx: FreshContext) {
+  if (req.method == "OPTIONS") {
     const resp = new Response(null, {
       status: 204,
     });
-    const origin = _req.headers.get("Origin") || "*";
+    const origin = req.headers.get("Origin") || "*";
     const headers = resp.headers;
     headers.set("Access-Control-Allow-Origin", origin);
     headers.set("Access-Control-Allow-Methods", "DELETE");
     return resp;
   }
-  const origin = _req.headers.get("Origin") || "*";
+  const origin = req.headers.get("Origin") || "*";
   const resp = await ctx.next();
   const headers = resp.headers;
 
